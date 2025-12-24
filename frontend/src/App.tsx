@@ -37,7 +37,12 @@ export default function App() {
   const [showTimeline, setShowTimeline] = useState(false); // Timeline State
   const [apiKeys, setApiKeys] = useState(() => {
     const saved = localStorage.getItem('nexus_api_keys');
-    return saved ? JSON.parse(saved) : { shodan: '', virustotal: '', hunter: '' };
+    const defaults = { shodan: '', virustotal: '', hunter: '', abuseipdb: '', numverify: '' };
+    try {
+      return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+    } catch (e) {
+      return defaults;
+    }
   });
 
   useEffect(() => {
@@ -85,11 +90,14 @@ export default function App() {
     let main = config.label;
 
     if (node.type === 'target') main = node.data.alias || node.data.name || 'OBJETIVO';
-    else if (node.type === 'ip') main = node.data.ip || 'IP ADDRESS';
+    else if (node.type === 'ip') main = node.data.ip || 'DIRECCIÓN IP';
+    else if (node.type === 'domain') main = node.data.domain || 'DOMINIO';
     else if (node.type === 'email') main = node.data.email || 'EMAIL';
     else if (node.type === 'phone') main = node.data.number || 'TELÉFONO';
     else if (node.type === 'crypto') main = node.data.address ? `${node.data.address.substring(0, 8)}...` : 'WALLET';
-    else if (node.type === 'identity') main = node.data.handle || 'HANDLE';
+    else if (node.type === 'identity') main = node.data.handle || node.data.username || 'USUARIO';
+    else if (node.type === 'company') main = node.data.name || 'ORGANIZACIÓN';
+    else if (node.type === 'bank') main = node.data.iban || node.data.bank_name || 'CUENTA';
 
     return { main, color: config.color, Icon: config.icon };
   }, []);
@@ -97,27 +105,44 @@ export default function App() {
   const handleEnrich = async (nodeId: string) => {
     const node = getNodeInfo(nodeId);
     if (!node) return;
-    let searchValue = node.data.ip || node.data.email || node.data.address;
-    if (!searchValue) return;
+
+    // Extract search value based on node type
+    let searchValue = '';
+    if (node.type === 'ip') searchValue = node.data.ip;
+    else if (node.type === 'email') searchValue = node.data.email;
+    else if (node.type === 'domain') searchValue = node.data.domain;
+    else if (node.type === 'phone') searchValue = node.data.number;
+    else if (node.type === 'crypto') searchValue = node.data.address;
+
+    if (!searchValue) {
+      console.warn(`No search value found for node type: ${node.type}`);
+      return;
+    }
 
     try {
+      console.log(`[Frontend] Requesting enrichment for ${node.type}: ${searchValue}`);
       const response = await axios.post('http://localhost:3001/api/enrich', {
         nodeId,
         type: node.type,
         searchValue,
-        apiKeys // Pass the keys
+        apiKeys
       });
+
       if (response.data.success) {
         const { enrichedData } = response.data.result;
 
-        // 1. Update the MAIN node with new data (if exists)
+        // Update the MAIN node with new data
         if (enrichedData) {
-          setNodes(prev => prev.map(n => n.id === nodeId ? { ...n, data: { ...n.data, ...enrichedData }, notes: (n.notes || '') + '\n[Enriched]' } : n));
+          setNodes(prev => prev.map(n => n.id === nodeId ? {
+            ...n,
+            data: { ...n.data, ...enrichedData },
+            notes: (n.notes || '') + `\n[Enriched ${new Date().toLocaleDateString()}]`
+          } : n));
         }
-
-        // Child node creation disabled for cleaner graph
       }
-    } catch (err) { console.error("Enrichment failed", err); }
+    } catch (err) {
+      console.error("Enrichment failed", err);
+    }
   };
 
   const handleExport = async (format: 'json' | 'jpg' | 'png') => {
@@ -1034,14 +1059,26 @@ export default function App() {
 
             <div className="p-4 space-y-4 overflow-y-auto custom-scrollbar flex-1">
 
-              {/* TIMELINE DATE */}
-              <div className="space-y-1">
-                <label className="text-[9px] text-cyan-400 font-bold uppercase block tracking-wider flex items-center gap-2">
-                  <Calendar size={10} /> Fecha (Timeline)
-                </label>
-                <input type="date" value={getNodeInfo(selectedNodeId)!.date || ''}
-                  onChange={(e) => setNodes(p => p.map(n => n.id === selectedNodeId ? { ...n, date: e.target.value } : n))}
-                  className="w-full bg-[#111] border border-cyan-900/30 rounded px-2 py-1.5 text-xs text-white focus:border-cyan-500 outline-none transition-all placeholder-neutral-700" />
+              {/* TIMELINE DATE & TIME */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] text-cyan-400 font-bold uppercase block tracking-wider flex items-center gap-2">
+                    <Calendar size={10} /> Fecha
+                  </label>
+                  <input type="date" value={getNodeInfo(selectedNodeId)!.date || ''}
+                    onChange={(e) => setNodes((p: any) => p.map((n: any) => n.id === selectedNodeId ? { ...n, date: e.target.value } : n))}
+                    className="w-full bg-[#111] border border-cyan-900/30 rounded px-2 py-1.5 text-xs text-white focus:border-cyan-500 outline-none transition-all placeholder-neutral-700" />
+                </div>
+                {getNodeInfo(selectedNodeId)!.type === 'ip' && (
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-cyan-400 font-bold uppercase block tracking-wider flex items-center gap-2">
+                      <Monitor size={10} /> Hora
+                    </label>
+                    <input type="time" value={getNodeInfo(selectedNodeId)!.data.time || ''}
+                      onChange={(e) => setNodes((p: any) => p.map((n: any) => n.id === selectedNodeId ? { ...n, data: { ...n.data, time: e.target.value } } : n))}
+                      className="w-full bg-[#111] border border-cyan-900/30 rounded px-2 py-1.5 text-xs text-white focus:border-cyan-500 outline-none transition-all placeholder-neutral-700" />
+                  </div>
+                )}
               </div>
 
               {/* Basic Fields */}
@@ -1161,13 +1198,16 @@ export default function App() {
                   {Object.entries(n.data)
                     .filter(([k, v]) => v && typeof v === 'string' && v.trim() !== '' && !['x', 'y', 'id', 'label'].includes(k))
                     .slice(0, 8) // Increased to 8 fields
-                    .map(([k, v]: [string, any]) => (
-                      <div key={k} className="flex flex-col text-[10px] leading-tight">
-                        <span className="text-neutral-500 font-mono uppercase text-[9px] mb-0.5">{k.replace(/_/g, ' ')}</span>
-                        <span className="text-neutral-200 font-medium break-words max-h-[60px] overflow-hidden text-ellipsis">{v}</span>
-                      </div>
-                    )
-                    )}
+                    .map(([k, v]: [string, any]) => {
+                      const field = ENTITY_CONFIG[n.type]?.fields?.find((f: any) => f.key === k);
+                      const label = field ? field.label : k.replace(/_/g, ' ').toUpperCase();
+                      return (
+                        <div key={k} className="flex flex-col text-[10px] leading-tight">
+                          <span className="text-neutral-500 font-mono uppercase text-[9px] mb-0.5">{label}</span>
+                          <span className="text-neutral-200 font-medium break-words max-h-[60px] overflow-hidden text-ellipsis">{v}</span>
+                        </div>
+                      );
+                    })}
                   {Object.keys(n.data).length === 0 && (
                     <span className="text-neutral-600 text-[10px] italic">Sin datos adicionales</span>
                   )}
@@ -1195,13 +1235,23 @@ export default function App() {
                   {/* ... Inputs ... */}
                   <div className="space-y-2">
                     <label className="block text-[10px] text-neutral-500 uppercase font-bold">Shodan API Key</label>
-                    <input type="password" value={apiKeys.shodan} onChange={e => setApiKeys(p => ({ ...p, shodan: e.target.value }))}
+                    <input type="password" value={apiKeys.shodan} onChange={e => setApiKeys((p: any) => ({ ...p, shodan: e.target.value }))}
                       className="w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none" placeholder="sk_..." />
                   </div>
                   <div className="space-y-2">
                     <label className="block text-[10px] text-neutral-500 uppercase font-bold">VirusTotal API Key</label>
-                    <input type="password" value={apiKeys.virustotal} onChange={e => setApiKeys(p => ({ ...p, virustotal: e.target.value }))}
+                    <input type="password" value={apiKeys.virustotal} onChange={e => setApiKeys((p: any) => ({ ...p, virustotal: e.target.value }))}
                       className="w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none" placeholder="vt_..." />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] text-neutral-500 uppercase font-bold">AbuseIPDB API Key</label>
+                    <input type="password" value={apiKeys.abuseipdb} onChange={e => setApiKeys((p: any) => ({ ...p, abuseipdb: e.target.value }))}
+                      className="w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none" placeholder="abuse_..." />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] text-neutral-500 uppercase font-bold">Numverify API Key (Phone)</label>
+                    <input type="password" value={apiKeys.numverify} onChange={e => setApiKeys((p: any) => ({ ...p, numverify: e.target.value }))}
+                      className="w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none" placeholder="nv_..." />
                   </div>
                 </div>
 

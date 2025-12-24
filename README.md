@@ -1,89 +1,96 @@
 # NEXUS OSINT 🕵️‍♂️🌐
 
-**Nexus OSINT** is a professional-grade, web-based Open Source Intelligence (OSINT) visualization and analysis tool. It allows investigators to map relationships between entities (Elements), enrich data using external APIs, and generate comprehensive intelligence dossiers.
+**Nexus OSINT** es una herramienta profesional de visualización y análisis de Inteligencia de Fuentes Abiertas (OSINT) basada en web. Permite a los investigadores mapear relaciones entre entidades (Elementos), enriquecer datos utilizando APIs externas y generar expedientes de inteligencia completos.
 
-![Nexus OSINT Screenshot](https://raw.githubusercontent.com/ikerbretos/nexus-osint/main/screenshot.png) *(Placeholder for screenshot)*
+![Captura de pantalla de Nexus OSINT](https://raw.githubusercontent.com/ikerbretos/nexus-osint/main/screenshot.png) *(Marcador de posición para la captura)*
 
-## ✨ Key Features
+## ✨ Características Principales
 
-*   **Graph Visualization**: Interactive force-directed graph to visualize connections between IPs, Domains, Emails, and more.
-*   **Timeline Analysis**: Chronological view of events associated with each element to understand the sequence of activities.
-*   **Intelligence Dossier Generator**: Generate professional PDF reports with a "Dossier" style layout (no generic tables). Automatically extracts and formats all known data points for every element.
-*   **Data Enrichment**: Built-in integration groundwork for APIs like Shodan, VirusTotal, and Hunter.io to automatically gather more info on targets.
-*   **Case Management**: Create, save, and switch between multiple investigation cases.
-*   **Modern UI**: Cyber-aesthetic interface with dark mode, glassmorphism, and intuitive controls.
+*   **Visualización de Gráficos**: Gráfico interactivo de fuerza dirigida para visualizar conexiones entre IPs, Dominios, Emails y más.
+*   **Análisis de Línea de Tiempo**: Vista cronológica de eventos asociados con cada elemento para entender la secuencia de actividades.
+*   **Generador de Expedientes de Inteligencia**: Genera informes PDF profesionales con un diseño estilo "Dossier" (sin tablas genéricas). Extrae y fotea automáticamente todos los puntos de datos conocidos para cada elemento.
+*   **Enriquecimiento de Datos**: Base integrada para APIs como Shodan, VirusTotal y Hunter.io para recopilar automáticamente más información sobre los objetivos.
+*   **Gestión de Casos**: Crea, guarda y cambia entre múltiples casos de investigación.
+*   **Interfaz Moderna**: Interfaz con estética "Cyber" con modo oscuro, glassmorphism y controles intuitivos.
 
-## 🚀 Getting Started
+## 🚀 Comenzando
 
-Follow these instructions to get a local copy up and running for development and testing purposes.
+Sigue estas instrucciones para obtener una copia local en funcionamiento para propósitos de desarrollo y prueba.
 
-### Prerequisites
+### Requisitos Previos
 
-*   [Node.js](https://nodejs.org/) (v16 or higher)
-*   [npm](https://www.npmjs.com/) (usually comes with Node.js)
+*   [Node.js](https://nodejs.org/) (v16 o superior)
+*   [npm](https://www.npmjs.com/) (generalmente viene con Node.js)
 *   [Git](https://git-scm.com/)
 
-### Installation
+### Instalación
 
-1.  **Clone the repository**
+1.  **Clonar el repositorio**
     ```bash
     git clone https://github.com/ikerbretos/nexus-osint.git
     cd nexus-osint
     ```
 
-2.  **Install Backend Dependencies**
+2.  **Instalar Dependencias del Backend**
     ```bash
     cd backend
     npm install
     ```
 
-3.  **Install Frontend Dependencies**
+3.  **Configurar la Base de Datos**
+    Inicializa la base de datos SQLite con Prisma.
+    ```bash
+    # Asegúrate de estar en la carpeta backend
+    npx prisma migrate dev --name init
+    ```
+
+4.  **Instalar Dependencias del Frontend**
     ```bash
     cd ../frontend
     npm install
     ```
 
-### 🏃‍♂️ Running the Application
+### 🏃‍♂️ Ejecutando la Aplicación
 
-You need to run both the backend and frontend servers. Open two terminal windows:
+Necesitas ejecutar tanto el servidor backend como el frontend. Abre dos terminales:
 
 **Terminal 1: Backend**
 ```bash
 cd backend
 npm run dev
 ```
-*The backend API will start on port `3001`.*
+*La API del backend iniciará en el puerto `3001`.*
 
 **Terminal 2: Frontend**
 ```bash
 cd frontend
 npm run dev
 ```
-*The frontend application will start on port `5173` (usually).*
+*La aplicación frontend iniciará en el puerto `5173` (generalmente).*
 
-Access the tool by opening your browser and navigating to:
+Accede a la herramienta abriendo tu navegador y navegando a:
 **http://localhost:5173**
 
-## 🛠️ Tech Stack
+## 🛠️ Tecnologías Utilizadas
 
-*   **Frontend**: React, TypeScript, Tailwind CSS, Lucide Icons, React Force Graph (custom implementation).
+*   **Frontend**: React, TypeScript, Tailwind CSS, Lucide Icons, React Force Graph (implementación personalizada).
 *   **Backend**: Node.js, Express.
-*   **Database**: SQLite (via Prisma ORM).
-*   **Export**: HTML-to-Image, jsPDF (custom implementation).
+*   **Base de Datos**: SQLite (vía Prisma ORM).
+*   **Exportación**: HTML-to-Image, jsPDF (implementación personalizada).
 
-## 📝 Usage Guide
+## 📝 Guía de Uso
 
-1.  **Create a Case**: Start by creating a new investigation case.
-2.  **Add Elements**: Use the sidebar to add targets (IPs, Emails, etc.) to the graph.
-3.  **Enrich Data**: Click on an element and hit "Enrich" to fetch external data (requires API keys in Settings).
-4.  **Connect**: Draw links between elements to visualize relationships.
-5.  **Timeline**: Use the timeline panel to view temporal data.
-6.  **Report**: Click the "Printer" icon to generate a full PDF dossier of your investigation.
+1.  **Crear un Caso**: Comienza creando un nuevo caso de investigación.
+2.  **Añadir Elementos**: Usa la barra lateral para añadir objetivos (IPs, Emails, etc.) al gráfico.
+3.  **Enriquecer Datos**: Haz clic en un elemento y presiona "Enrich" para obtener datos externos (requiere claves API en Configuración).
+4.  **Conectar**: Dibuja enlaces entre elementos para visualizar relaciones.
+5.  **Línea de Tiempo**: Usa el panel de línea de tiempo para ver datos temporales.
+6.  **Informe**: Haz clic en el icono de "Impresora" para generar un expediente PDF completo de tu investigación.
 
-## 🤝 Contributing
+## 🤝 Contribuir
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+¡Las contribuciones son bienvenidas! Siéntete libre de enviar un Pull Request.
 
-## 📄 License
+## 📄 Licencia
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Este proyecto está bajo la Licencia MIT - mira el archivo [LICENSE](LICENSE) para más detalles.

@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
-import { ipLookup, dnsLookup } from './modules/osint';
+import { ipLookup, dnsLookup, emailLookup, phoneLookup } from './modules/osint';
 
 dotenv.config();
 
@@ -75,10 +75,16 @@ app.post('/api/enrich', async (req, res) => {
     const { nodeId, type, searchValue, apiKeys } = req.body;
     let result = null;
 
+    console.log(`[API] Enrichment request for type: ${type}, value: ${searchValue}`);
+
     if (type === 'ip') {
-        result = await ipLookup(searchValue, apiKeys?.shodan);
+        result = await ipLookup(searchValue, apiKeys?.shodan, apiKeys?.abuseipdb);
     } else if (type === 'domain') {
         result = await dnsLookup(searchValue);
+    } else if (type === 'email') {
+        result = await emailLookup(searchValue, apiKeys?.hunter);
+    } else if (type === 'phone') {
+        result = await phoneLookup(searchValue, apiKeys?.numverify);
     }
 
     res.json({ success: !!result, result });

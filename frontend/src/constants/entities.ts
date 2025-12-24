@@ -14,20 +14,21 @@ export const ENTITY_CONFIG: any = {
         color: '#ef4444',
         icon: User,
         fields: [
-            { key: 'name', label: 'Nombre Completo' },
-            { key: 'alias', label: 'Alias / Apodo' },
-            { key: 'dob', label: 'Fecha de Nacimiento' },
-            { key: 'cob', label: 'Lugar de Nacimiento' },
-            { key: 'national_id', label: 'DNI / Pasaporte' },
-            { key: 'nationality', label: 'Nacionalidad' },
-            { key: 'gender', label: 'Género' },
-            { key: 'occupation', label: 'Ocupación' },
-            { key: 'employer', label: 'Empleador' },
-            { key: 'notes', label: 'Notas de Inteligencia' },
-            { key: 'risk_score', label: 'Nivel de Riesgo (0-100)' },
-            { key: 'last_seen', label: 'Última vez visto' },
-            { key: 'status', label: 'Estado (Activo/Inactivo)' },
-            { key: 'tags', label: 'Etiquetas (CSV)' }
+            { key: 'name', label: 'NOMBRE COMPLETO' },
+            { key: 'alias', label: 'ALIAS / APODO' },
+            { key: 'dob', label: 'FECHA NACIMIENTO' },
+            { key: 'cob', label: 'LUGAR NACIMIENTO' },
+            { key: 'national_id', label: 'DNI / PASAPORTE' },
+            { key: 'nationality', label: 'NACIONALIDAD' },
+            { key: 'gender', label: 'GÉNERO' },
+            { key: 'occupation', label: 'OCUPACIÓN' },
+            { key: 'employer', label: 'EMPLEADOR' },
+            { key: 'risk_score', label: 'NIVEL RIESGO' },
+            { key: 'last_seen', label: 'ÚLTIMA VEZ VISTO' },
+            { key: 'status', label: 'ESTADO' },
+            { key: 'tags', label: 'ETIQUETAS' },
+            { key: 'notes', label: 'NOTAS DE INTELIGENCIA' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     ip: {
@@ -35,23 +36,24 @@ export const ENTITY_CONFIG: any = {
         color: '#06b6d4',
         icon: Network,
         fields: [
-            { key: 'ip', label: 'Dirección IP' },
-            { key: 'version', label: 'Versión (IPv4/IPv6)' },
+            { key: 'ip', label: 'DIRECCIÓN IP' },
+            { key: 'time', label: 'HORA DETECTADA' },
             { key: 'asn', label: 'ASN' },
-            { key: 'isp', label: 'Proveedor ISP' },
-            { key: 'organization', label: 'Organización' },
-            { key: 'country', label: 'País' },
-            { key: 'city', label: 'Ciudad' },
-            { key: 'lat', label: 'Latitud' },
-            { key: 'lon', label: 'Longitud' },
-            { key: 'timezone', label: 'Zona Horaria' },
-            { key: 'ports', label: 'Puertos Abiertos' },
-            { key: 'os', label: 'Sistema Operativo' },
-            { key: 'vulns', label: 'Vulnerabilidades' },
-            { key: 'reverse_dns', label: 'Reverse DNS' },
-            { key: 'proxy', label: 'Es Proxy/VPN?' },
-            { key: 'tor', label: 'Es Nodo Tor?' },
-            { key: 'risk_score', label: 'AbuseIPDB Score' }
+            { key: 'isp', label: 'PROVEEDOR ISP' },
+            { key: 'organization', label: 'ORGANIZACIÓN' },
+            { key: 'country', label: 'PAÍS' },
+            { key: 'city', label: 'CIUDAD' },
+            { key: 'lat', label: 'LATITUD' },
+            { key: 'lon', label: 'LONGITUD' },
+            { key: 'timezone', label: 'ZONA HORARIA' },
+            { key: 'ports', label: 'PUERTOS' },
+            { key: 'os', label: 'SISTEMA OPERATIVO' },
+            { key: 'vulns', label: 'VULNERABILIDADES' },
+            { key: 'reverse_dns', label: 'DNS REVERSO' },
+            { key: 'proxy', label: 'PROXY / VPN?' },
+            { key: 'tor', label: 'NODO TOR?' },
+            { key: 'risk_score', label: 'PUNTUACIÓN ABUSE' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     email: {
@@ -59,15 +61,20 @@ export const ENTITY_CONFIG: any = {
         color: '#eab308',
         icon: Mail,
         fields: [
-            { key: 'email', label: 'Dirección de Email' },
-            { key: 'provider', label: 'Proveedor' },
-            { key: 'disposable', label: 'Es Desechable?' },
-            { key: 'breached', label: 'Aparece en Brechas?' },
-            { key: 'last_breach', label: 'Fecha Última Brecha' },
-            { key: 'password_hash', label: 'Hash Conocido' },
-            { key: 'social_profiles', label: 'Perfiles Sociales' },
-            { key: 'gravatar', label: 'Tiene Gravatar?' },
-            { key: 'domain_age', label: 'Antigüedad Dominio' }
+            { key: 'email', label: 'DIRECCIÓN EMAIL' },
+            { key: 'user', label: 'USUARIO' },
+            { key: 'domain', label: 'DOMINIO' },
+            { key: 'status', label: 'ESTADO' },
+            { key: 'leaks', label: 'FILTRACIONES / BRECHAS' },
+            { key: 'provider', label: 'PROVEEDOR' },
+            { key: 'disposable', label: '¿ES DESECHABLE?' },
+            { key: 'breached', label: '¿ESTÁ FILTRADO?' },
+            { key: 'last_breach', label: 'FECHA ÚLTIMA FILTRACIÓN' },
+            { key: 'social_profiles', label: 'PERFILES SOCIALES' },
+            { key: 'gravatar', label: '¿TIENE GRAVATAR?' },
+            { key: 'domain_age', label: 'ANTIGÜEDAD DOMINIO' },
+            { key: 'score', label: 'PUNTUACIÓN DE ENTREGA' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     phone: {
@@ -75,14 +82,16 @@ export const ENTITY_CONFIG: any = {
         color: '#22c55e',
         icon: Phone,
         fields: [
-            { key: 'number', label: 'Número' },
-            { key: 'country_code', label: 'Código País' },
-            { key: 'carrier', label: 'Operador' },
-            { key: 'line_type', label: 'Tipo (Móvil/Fijo)' },
-            { key: 'whatsapp', label: 'Tiene WhatsApp?' },
-            { key: 'telegram', label: 'Tiene Telegram?' },
-            { key: 'cnam', label: 'Caller ID Name' },
-            { key: 'location', label: 'Ubicación Aproximada' }
+            { key: 'number', label: 'NÚMERO TELÉFONO' },
+            { key: 'countryCode', label: 'CÓDIGO PAÍS' },
+            { key: 'carrier', label: 'OPERADOR' },
+            { key: 'type', label: 'TIPO DE LÍNEA' },
+            { key: 'whatsapp', label: '¿TIENE WHATSAPP?' },
+            { key: 'telegram', label: '¿TIENE TELEGRAM?' },
+            { key: 'location', label: 'UBICACIÓN' },
+            { key: 'cnam', label: 'IDENTIFICADOR (CNAM)' },
+            { key: 'valid', label: '¿NÚMERO VÁLIDO?' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     domain: {
@@ -90,15 +99,19 @@ export const ENTITY_CONFIG: any = {
         color: '#8b5cf6',
         icon: Globe,
         fields: [
-            { key: 'domain', label: 'Nombre de Dominio' },
-            { key: 'registrar', label: 'Registrador' },
-            { key: 'creation_date', label: 'Fecha Creación' },
-            { key: 'expiry_date', label: 'Fecha Expiración' },
-            { key: 'servers', label: 'Nameservers' },
-            { key: 'whois_privacy', label: 'Whois Privacy?' },
-            { key: 'subdomains', label: 'Subdominios Conocidos' },
-            { key: 'ssl_issuer', label: 'Emisor SSL' },
-            { key: 'mx_records', label: 'Registros MX' }
+            { key: 'domain', label: 'DOMINIO' },
+            { key: 'ips', label: 'DIRECCIONES IP' },
+            { key: 'mx_records', label: 'REGISTROS MX' },
+            { key: 'servers', label: 'SERVIDORES DE NOMBRES' },
+            { key: 'txt_records', label: 'REGISTROS TXT' },
+            { key: 'registrar', label: 'REGISTRADOR' },
+            { key: 'creation_date', label: 'FECHA CREACIÓN' },
+            { key: 'expiry_date', label: 'FECHA EXPIRACIÓN' },
+            { key: 'status', label: 'ESTADO' },
+            { key: 'whois_privacy', label: '¿PRIVACIDAD WHOIS?' },
+            { key: 'subdomains', label: 'SUBDOMINIOS' },
+            { key: 'ssl_issuer', label: 'EMISOR SSL' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     crypto: {
@@ -106,15 +119,16 @@ export const ENTITY_CONFIG: any = {
         color: '#f97316',
         icon: Bitcoin,
         fields: [
-            { key: 'address', label: 'Dirección Wallet' },
-            { key: 'currency', label: 'Moneda (BTC/ETH...)' },
-            { key: 'balance', label: 'Saldo Actual' },
-            { key: 'total_received', label: 'Total Recibido' },
-            { key: 'total_sent', label: 'Total Enviado' },
-            { key: 'first_tx', label: 'Primera Transacción' },
-            { key: 'last_tx', label: 'Última Transacción' },
-            { key: 'risk_level', label: 'Nivel Riesgo AML' },
-            { key: 'entity', label: 'Entidad Conocida' }
+            { key: 'address', label: 'DIRECCIÓN WALLET' },
+            { key: 'currency', label: 'MONEDA' },
+            { key: 'balance', label: 'SALDO' },
+            { key: 'total_received', label: 'TOTAL RECIBIDO' },
+            { key: 'total_sent', label: 'TOTAL ENVIADO' },
+            { key: 'first_tx', label: 'PRIMERA TRANSACCIÓN' },
+            { key: 'last_tx', label: 'ÚLTIMA TRANSACCIÓN' },
+            { key: 'risk_level', label: 'NIVEL RIESGO AML' },
+            { key: 'entity', label: 'ENTIDAD CONOCIDA' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     identity: {
@@ -122,15 +136,16 @@ export const ENTITY_CONFIG: any = {
         color: '#ec4899',
         icon: Smartphone,
         fields: [
-            { key: 'platform', label: 'Plataforma' },
-            { key: 'username', label: 'Usuario / Handle' },
-            { key: 'userid', label: 'User ID' },
-            { key: 'url', label: 'URL Perfil' },
-            { key: 'bio', label: 'Biografía' },
-            { key: 'followers', label: 'Seguidores' },
-            { key: 'following', label: 'Siguiendo' },
-            { key: 'creation_date', label: 'Fecha Creación' },
-            { key: 'verified', label: 'Verificado?' }
+            { key: 'platform', label: 'PLATAFORMA' },
+            { key: 'username', label: 'USUARIO / HANDLE' },
+            { key: 'userid', label: 'ID USUARIO' },
+            { key: 'url', label: 'URL PERFIL' },
+            { key: 'bio', label: 'BIOGRAFÍA' },
+            { key: 'followers', label: 'SEGUIDORES' },
+            { key: 'following', label: 'SIGUIENDO' },
+            { key: 'creation_date', label: 'FECHA CREACIÓN' },
+            { key: 'verified', label: '¿VERIFICADO?' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     bank: {
@@ -138,13 +153,14 @@ export const ENTITY_CONFIG: any = {
         color: '#64748b',
         icon: Landmark,
         fields: [
-            { key: 'iban', label: 'IBAN / Número' },
+            { key: 'iban', label: 'IBAN / NÚMERO' },
             { key: 'swift', label: 'SWIFT / BIC' },
-            { key: 'bank_name', label: 'Banco' },
-            { key: 'holder', label: 'Titular' },
-            { key: 'country', label: 'País' },
-            { key: 'currency', label: 'Moneda' },
-            { key: 'branch', label: 'Sucursal' }
+            { key: 'bank_name', label: 'NOMBRE BANCO' },
+            { key: 'holder', label: 'TITULAR' },
+            { key: 'country', label: 'PAÍS' },
+            { key: 'currency', label: 'MONEDA' },
+            { key: 'branch', label: 'SUCURSAL' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     location: {
@@ -152,12 +168,13 @@ export const ENTITY_CONFIG: any = {
         color: '#10b981',
         icon: MapPin,
         fields: [
-            { key: 'city', label: 'Ciudad' },
-            { key: 'country', label: 'País' },
-            { key: 'lat', label: 'Latitud' },
-            { key: 'lon', label: 'Longitud' },
-            { key: 'zip', label: 'Código Postal' },
-            { key: 'timezone', label: 'Zona Horaria' }
+            { key: 'city', label: 'CIUDAD' },
+            { key: 'country', label: 'PAÍS' },
+            { key: 'lat', label: 'LATITUD' },
+            { key: 'lon', label: 'LONGITUD' },
+            { key: 'zip', label: 'CÓDIGO POSTAL' },
+            { key: 'timezone', label: 'ZONA HORARIA' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     company: {
@@ -165,11 +182,12 @@ export const ENTITY_CONFIG: any = {
         color: '#f59e0b',
         icon: Building,
         fields: [
-            { key: 'name', label: 'Nombre' },
+            { key: 'name', label: 'NOMBRE' },
             { key: 'asn', label: 'ASN' },
             { key: 'isp', label: 'ISP' },
-            { key: 'domain', label: 'Dominio Web' },
-            { key: 'registry', label: 'Registro' }
+            { key: 'domain', label: 'DOMINIO WEB' },
+            { key: 'registry', label: 'REGISTRO' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     },
     server: {
@@ -177,11 +195,12 @@ export const ENTITY_CONFIG: any = {
         color: '#6366f1',
         icon: Server,
         fields: [
-            { key: 'ports', label: 'Puertos Abiertos' },
-            { key: 'os', label: 'Sistema Operativo' },
-            { key: 'vulns', label: 'Vulnerabilidades' },
-            { key: 'banner', label: 'Banner Service' },
-            { key: 'cpe', label: 'CPE' }
+            { key: 'ports', label: 'PUERTOS ABIERTOS' },
+            { key: 'os', label: 'SISTEMA OPERATIVO' },
+            { key: 'vulns', label: 'VULNERABILIDADES' },
+            { key: 'banner', label: 'BANNER SERVICIO' },
+            { key: 'cpe', label: 'CPE' },
+            { key: 'last_update', label: 'ÚLTIMA ACTUALIZACIÓN' }
         ]
     }
 };
