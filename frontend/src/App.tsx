@@ -32,6 +32,9 @@ export default function App() {
     saveCase, loadCase
   } = useGraphStore();
 
+  // --- CORRECCIÓN 1: Definir la URL de la API dinámicamente ---
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
   const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [linkingSource, setLinkingSource] = useState<string | null>(null);
@@ -80,8 +83,6 @@ export default function App() {
         const delta = e.deltaY;
         setScale(s => Math.min(Math.max(0.1, s - delta * zoomSensitivity), 3));
       }
-      // OPTIONAL: Prevent default scrolling if we want ONLY middle-click pan?
-      // For now, let's leave default scroll unless Ctrl is pressed.
     };
 
     // Use { passive: false } to allow preventDefault()
@@ -99,9 +100,6 @@ export default function App() {
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [virtualNodePositions, setVirtualNodePositions] = useState<any>({});
 
-
-
-
   // UI State
   const [draggingNode, setDraggingNode] = useState<string | null>(null);
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
@@ -113,7 +111,8 @@ export default function App() {
   useEffect(() => {
     const init = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/cases');
+        // --- CORRECCIÓN 2: Usar API_URL ---
+        const res = await axios.get(`${API_URL}/cases`);
         if (res.data.length > 0) {
           // Logic to load last case if needed
         }
@@ -127,7 +126,8 @@ export default function App() {
   // --- HANDLERS DE PROYECTO ---
   const handleCreateProject = async (name: string) => {
     try {
-      const res = await axios.post('http://localhost:3001/api/cases', {
+      // --- CORRECCIÓN 3: Usar API_URL ---
+      const res = await axios.post(`${API_URL}/cases`, {
         name: name.toUpperCase(),
         description: 'Nueva investigación Manual'
       });
@@ -151,11 +151,10 @@ export default function App() {
         // Priorizar ID existente en el archivo importado
         if (json.id) {
           setCurrentCaseId(json.id);
-          // Opcional: Notificar al backend que 'cargamos' este caso si fuera necesario, 
-          // pero para la UI basta con setear el ID.
         } else {
           // Fallback para archivos antiguos: Crear nueva sesión en backend
-          const res = await axios.post('http://localhost:3001/api/cases', {
+          // --- CORRECCIÓN 4: Usar API_URL ---
+          const res = await axios.post(`${API_URL}/cases`, {
             name: `IMPORT_${Date.now()}`,
             description: 'Importado de JSON'
           });
@@ -215,7 +214,8 @@ export default function App() {
     if (!searchValue) return;
 
     try {
-      const response = await axios.post('http://localhost:3001/api/enrich', {
+      // --- CORRECCIÓN 5: Usar API_URL ---
+      const response = await axios.post(`${API_URL}/enrich`, {
         nodeId,
         type: node.type,
         searchValue,
@@ -363,7 +363,6 @@ export default function App() {
         }
       });
     } else if (type === 'tree') {
-      // Simple tree layout
       const levels: { [key: string]: number } = {};
       const processLevel = (id: string, lvl: number) => {
         levels[id] = lvl;
@@ -388,10 +387,6 @@ export default function App() {
         n.y = cy + lvl * 150;
       });
     } else if (type === 'force') {
-      // Force layout is typically handled by D3 or similar, usually continuous.
-      // For static apply, we might just randomize or leave as is if physics engine is separate.
-      // Assuming user wants to "reset" to a random-ish state to let simulation take over if we had one.
-      // Since we don't have a live simulation engine in this snippet, we'll do a circle pack.
       newNodes.forEach((node, i) => {
         const angle = (i / newNodes.length) * 2 * Math.PI;
         const radius = 200 + Math.random() * 100;
@@ -417,14 +412,12 @@ export default function App() {
       // ... Virtual Node logic ...
     });
 
-    // ... Visibility logic ...
-
-    links.forEach(l => displayLinks.push({ ...l, isVirtual: false })); // Simplified for now
+    links.forEach(l => displayLinks.push({ ...l, isVirtual: false }));
 
     return { visibleIds, virtualNodes, displayLinks };
   }, [nodes, links, collapsedGroups, expandedCategories, virtualNodePositions, activeLayout]);
 
-  // AUTO-SPREAD CHILDREN (Keep useEffect)
+  // AUTO-SPREAD CHILDREN
   useEffect(() => {
     // ...
   }, [expandedCategories, activeLayout, nodes.length]);
@@ -434,7 +427,6 @@ export default function App() {
   if (isWelcomeScreen) {
     return (
       <div className="h-screen bg-[#050505] flex items-center justify-center font-sans text-white bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-900 via-[#050505] to-[#050505]">
-        {/* Welcome Screen Content */}
         <div className="max-w-lg w-full p-6 border border-white/5 rounded-2xl text-center space-y-4 animate-in fade-in zoom-in duration-500 bg-white/5 backdrop-blur-xl shadow-2xl">
           <div className="space-y-0">
             <div className="flex items-center justify-center mx-auto -my-10">
@@ -478,7 +470,6 @@ export default function App() {
       />
 
       <main className="flex-1 flex flex-col relative overflow-hidden bg-[#111111]">
-        {/* ... */}
 
         {/* EXPORT MENU  */}
         {showExportMenu && (
@@ -498,7 +489,6 @@ export default function App() {
           </div>
         )}
 
-        {/* TIMELINE */}
         {/* HEADER */}
         <header className="h-14 bg-[#111111]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 z-30 shrink-0 relative">
           <div className="flex items-center gap-4">
@@ -507,10 +497,9 @@ export default function App() {
             </button>
             <h1 className="font-bold text-lg tracking-widest text-white uppercase italic">ZAHORI <span className="text-neutral-600 font-mono text-[10px] not-italic tracking-normal">{currentCaseId || 'UNSAVED'}</span></h1>
           </div>
-          {/* ... Header Right with Export ... */}
         </header>
 
-        {/* ZOOM CONTROLS - TOP CENTER (Redirected) */}
+        {/* ZOOM CONTROLS - TOP CENTER */}
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 flex gap-2">
           <div className="glass-panel p-1 rounded-full flex gap-1 border border-white/5 bg-[#161b22]/90 backdrop-blur-xl shadow-xl">
             <button onClick={() => setScale(s => Math.max(s - 0.1, 0.1))} className="w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 rounded-full transition" title="Zoom Out"><ZoomOut size={16} /></button>
@@ -534,7 +523,6 @@ export default function App() {
         <div ref={workspaceRef} className="flex-1 relative cursor-crosshair overflow-hidden"
 
           onMouseDown={(e) => {
-            // MIDDLE CLICK PAN
             if (e.button === 1) { // Middle Mouse Button
               e.preventDefault();
               setIsDraggingCanvas(true);
@@ -542,19 +530,15 @@ export default function App() {
               return;
             }
 
-            // ... Mouse Down Logic ...
-            setContextMenu(null); // Close context menu on click
+            setContextMenu(null);
             if (mode === 'add') {
-              // ... add node ...
               const rect = workspaceRef.current!.getBoundingClientRect();
               const id = `N_${Date.now()}`;
               setNodes(prev => [...prev, { id, type: addType, data: {}, notes: '', x: (e.clientX - rect.left - offset.x) / scale, y: (e.clientY - rect.top - offset.y) / scale }]);
               setSelectedNodeId(id); setMode('select'); setIsEditing(true);
             }
-            // ...
           }}
           onMouseMove={(e) => {
-            // DRAGGING CANVAS (Middle Click or Space mode)
             if (isDraggingCanvas) {
               setOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
               return;
@@ -565,57 +549,22 @@ export default function App() {
               const mouseX = (e.clientX - rect.left - offset.x) / scale;
               const mouseY = (e.clientY - rect.top - offset.y) / scale;
 
-              // Check if dragging a GROUP or a NORMAL NODE
               if (draggingNode.includes('_group')) {
-                // GROUP DRAG LOGIC
-                // 1. Move the Virtual Group Node
+                // --- CORRECCIÓN 6: Tipo explícito para prev ---
                 setVirtualNodePositions((prev: any) => ({
                   ...prev,
                   [draggingNode]: { x: mouseX, y: mouseY }
                 }));
 
-                // 2. Move Children (Calculate Delta)
-                // Problem: We need the OLD group position to calculate delta.
-                // React state update is async.
-                // Better approach: Calculate delta from MOUSE movement (e.movementX).
-
                 const deltaX = e.movementX / scale;
                 const deltaY = e.movementY / scale;
 
-                // Find children of this group to move them
-                // We need to parse the group ID or store map.
-                // ID format: targetId_type_group
-                // Let's iterate nodes and find matches.
-                const [targetId, type] = draggingNode.split('_'); // Rough split, careful with IDs containing underscores.
-                // Better: We stored 'childrenIds' in the renderNode but we can't access it here easily without re-deriving.
-                // Re-deriving is fast enough.
-
-                // Parse ID carefully: "TARGETID_TYPE_group"
-                // Actually, let's just use the `nodes` array.
-                // We need to find nodes that are children of the group's parent and match type?
-                // Or... we passed `childrenIds` to the Group Node but that's in render.
-
-                // Let's assume we can scan `nodes`.
-                // Wait, `draggingNode` string ID is "parentId_type_group".
-                // Let's regex it.
                 const match = draggingNode.match(/(.+)_([^_]+)_group$/);
                 if (match) {
                   const parentId = match[1];
                   const nodeType = match[2];
 
                   setNodes(prev => prev.map(n => {
-                    // Move only children of the specific group
-                    // To match logic: child acts as neighbor to parentId and has type nodeType?
-                    // Or we rely on `links`?
-                    // Relying on links in `prev`? No, links are separate state.
-                    // We need to know who belongs to this group.
-                    // "Children of target X with type Y".
-
-                    // We need to verify connectivity.
-                    // Simplified heuristic: If node.type === nodeType and is linked to parentId.
-                    // This requires access to Links.
-
-                    // Accessing 'links' state here is fine.
                     const isLinked = links.some(l =>
                       (l.source === parentId && l.target === n.id) ||
                       (l.target === parentId && l.source === n.id)
@@ -628,7 +577,6 @@ export default function App() {
                   }));
                 }
               } else {
-                // NORMAL NODE DRAG
                 setNodes(prev => prev.map(n => n.id === draggingNode ? { ...n, x: mouseX, y: mouseY } : n));
               }
               return;
@@ -638,7 +586,7 @@ export default function App() {
           }}
           onMouseUp={() => { setDraggingNode(null); setIsDraggingCanvas(false); }}
         >
-          {/* GRID (DOT PATTERN - WHITER DOTS) */}
+          {/* GRID */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.8]" style={{
             backgroundImage: 'radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px)',
             backgroundSize: `${25 * scale}px ${25 * scale}px`,
@@ -648,20 +596,13 @@ export default function App() {
           {/* NODES LAYER */}
           <div className="absolute inset-0 pointer-events-none origin-top-left z-10" style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}>
 
-            {/* CALCULATE RENDER DATA (Virtual Hierarchy) */}
             {(() => {
-              // We create a temporary structure for rendering to handle the "Target -> Group -> Child" logic
-              // This replaces drawing raw links/nodes directly
-
               const renderNodes: any[] = [];
               const renderLinks: any[] = [];
               const processedNodeIds = new Set<string>();
 
-              // 1. Add ALL Targets first
               nodes.filter(n => n.type === 'target').forEach(target => {
                 const isTargetCollapsed = collapsedTargets.has(target.id);
-
-                // Calculate Total Children for Badge
                 const totalChildren = links.filter(l => l.source === target.id || l.target === target.id)
                   .filter(l => {
                     const neighborId = l.source === target.id ? l.target : l.source;
@@ -676,21 +617,17 @@ export default function App() {
                 });
                 processedNodeIds.add(target.id);
 
-                // IF TARGET IS COLLAPSED, SKIP CHILDREN RENDERING (But mark them processed to avoid orphans)
                 if (isTargetCollapsed) {
-                  // Mark all children as processed
                   const childrenLinks = links.filter(l => l.source === target.id || l.target === target.id);
                   childrenLinks.forEach(l => {
                     const childId = l.source === target.id ? l.target : l.source;
-                    // Verify it's not another target
                     if (nodes.find(n => n.id === childId)?.type !== 'target') {
                       processedNodeIds.add(childId);
                     }
                   });
-                  return; // STOP HERE for this target
+                  return;
                 }
 
-                // 2. Process Children by Type (Normal Flow)
                 const childrenLinks = links.filter(l => l.source === target.id || l.target === target.id);
                 const childrenByType: { [key: string]: any[] } = {};
 
@@ -703,32 +640,24 @@ export default function App() {
                   }
                 });
 
-                // 3. Generate Groups or Direct Links
                 Object.entries(childrenByType).forEach(([type, children]) => {
                   if (children.length > 1) {
-                    // HAS GROUP
                     const groupId = `${target.id}_${type}_group`;
                     const isGroupCollapsed = collapsedGroups.has(`${target.id}_${type}`);
 
                     const avgX = children.reduce((sum, c) => sum + c.x, 0) / children.length;
                     const avgY = children.reduce((sum, c) => sum + c.y, 0) / children.length;
 
-                    // User wants independent position. Use VIRTUAL POSITION if set, else CENTROID.
-                    // CRITICAL: We DO NOT auto-update virtual position on re-renders, or it will snap back.
-                    // We only set it if it's MISSING.
-
                     const existingPos = virtualNodePositions[groupId];
                     let groupX = existingPos ? existingPos.x : avgX;
                     let groupY = existingPos ? existingPos.y : avgY;
 
-                    // If naive first render, save it? No, avoid infinite loop. Just use avgX as default.
-
                     const groupNode = {
                       id: groupId,
-                      type: type, // Visual type
+                      type: type,
                       isGroup: true,
                       parentId: target.id,
-                      childrenIds: children.map(c => c.id), // STORE CHILDREN IDs to allow mass-drag
+                      childrenIds: children.map(c => c.id),
                       count: children.length,
                       x: groupX,
                       y: groupY,
@@ -737,7 +666,6 @@ export default function App() {
                     };
                     renderNodes.push(groupNode);
 
-                    // Link Target -> Group
                     renderLinks.push({
                       id: `link_${target.id}_${groupId}`,
                       x1: target.x, y1: target.y,
@@ -745,11 +673,9 @@ export default function App() {
                       isVirtual: true
                     });
 
-                    // Always mark children as processed
                     children.forEach(child => processedNodeIds.add(child.id));
 
                     if (!isGroupCollapsed) {
-                      // Link Group -> Children
                       children.forEach(child => {
                         renderNodes.push({ ...child, isVirtual: false });
                         renderLinks.push({
@@ -761,7 +687,6 @@ export default function App() {
                       });
                     }
                   } else {
-                    // SINGLE CHILD - DIRECT LINK
                     children.forEach(child => {
                       renderNodes.push({ ...child, isVirtual: false });
                       processedNodeIds.add(child.id);
@@ -769,87 +694,61 @@ export default function App() {
                         id: `link_${target.id}_${child.id}`,
                         x1: target.x, y1: target.y,
                         x2: child.x, y2: child.y,
-                        isVirtual: false // Real link visually
+                        isVirtual: false
                       });
                     });
                   }
                 });
               });
 
-              // Add any orphans or unconnected nodes not processed (e.g. strict standalone? Unlikely in this app logic but safe to add)
               nodes.forEach(n => {
                 if (!processedNodeIds.has(n.id) && n.type !== 'target') {
                   renderNodes.push(n);
-                  // Find links for it? 
-                  // Simplified: Only drawing hierarchy for Targets for now as per request.
                 }
               });
 
-
               return (
                 <>
-                  {/* RENDER LINKS */}
                   <svg className="absolute inset-0 w-full h-full z-0 pointer-events-none overflow-visible">
                     <g>
                       {renderLinks.map(l => {
-                        // Calculate Smart Bezier Curve
                         const dx = Math.abs(l.x2 - l.x1);
                         const dy = Math.abs(l.y2 - l.y1);
                         const isHorizontal = dx > dy;
-
                         let d = '';
                         if (isHorizontal) {
-                          // Horizontal S-Curve
                           const midX = (l.x1 + l.x2) / 2;
                           d = `M ${l.x1} ${l.y1} C ${midX} ${l.y1}, ${midX} ${l.y2}, ${l.x2} ${l.y2}`;
                         } else {
-                          // Vertical S-Curve
                           const midY = (l.y1 + l.y2) / 2;
                           d = `M ${l.x1} ${l.y1} C ${l.x1} ${midY}, ${l.x2} ${midY}, ${l.x2} ${l.y2}`;
                         }
-
                         return (
-                          <path
-                            key={l.id}
-                            d={d}
-                            fill="none"
-                            stroke="rgba(6,182,212,0.3)"
-                            strokeWidth="2"
-                          />
+                          <path key={l.id} d={d} fill="none" stroke="rgba(6,182,212,0.3)" strokeWidth="2" />
                         );
                       })}
                     </g>
                   </svg>
 
-                  {/* RENDER NODES */}
                   {renderNodes.map(node => {
                     if (node.isGroup) {
-                      // RENDERING GROUP NODE
                       const Icon = ENTITY_CONFIG[node.type]?.icon || CircleDot;
                       const isCollapsed = node.collapsed;
-
                       return (
-
                         <div key={node.id}
                           onMouseDown={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            // Start Group Drag
                             if (!isCollapsed) {
-                              // If expanded, we drag group + children
                               setDraggingNode(node.id);
-                              // We might need to store offset? Simplified logic: 
-                              // We rely on global onMouseMove + node ID logic. 
-                              // BUT: virtualNodePositions might be empty if never moved. 
-                              // Initialize it NOW if empty to avoid jump?
                               if (!virtualNodePositions[node.id]) {
+                                // --- CORRECCIÓN 7: Tipo explícito para prev ---
                                 setVirtualNodePositions((prev: any) => ({ ...prev, [node.id]: { x: node.x, y: node.y } }));
                               }
                             } else {
-                              // If collapsed, just visual drag? 
-                              // Simplified: Dragging works same way.
                               setDraggingNode(node.id);
                               if (!virtualNodePositions[node.id]) {
+                                // --- CORRECCIÓN 8: Tipo explícito para prev ---
                                 setVirtualNodePositions((prev: any) => ({ ...prev, [node.id]: { x: node.x, y: node.y } }));
                               }
                             }
@@ -863,12 +762,6 @@ export default function App() {
                                                          bg-cyan-950/90 border-cyan-400 shadow-cyan-500/30`}>
                             <Icon size={20} className="text-cyan-400" />
                           </div>
-
-                          {/* COUNT BADGE: ONLY VISIBLE IF COLLAPSED OR ALWAYS? 
-                              User said: "ahora si hiciese click ... y quedarse solo el grupo ahora si con el 2"
-                              This implies Badge is the indicator of hidden items. 
-                              So logic: Show badge if isCollapsed.
-                           */}
                           {isCollapsed && (
                             <div className="absolute -top-1 -right-1 bg-cyan-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg border border-white/20">
                               {node.count}
@@ -877,25 +770,22 @@ export default function App() {
                         </div>
                       );
                     } else {
-                      // STANDARD NODE RENDERING
                       const display = getNodeDisplayInfo(node);
                       const isSel = selectedNodeId === node.id;
-                      const isCollapsedTarget = node.collapsed; // Prop passed for Target
+                      const isCollapsedTarget = node.collapsed;
 
                       return (
                         <div key={node.id}
                           onClick={(e) => {
                             if (node.type === 'target' && mode === 'select') {
                               e.stopPropagation();
-                              // CHECK IF JUST LINKED
                               if (justLinkedRef.current) {
                                 justLinkedRef.current = false;
                                 return;
                               }
-                              // CHECK FOR DRAG
                               if (dragStartPosRef.current) {
                                 const dist = Math.hypot(e.clientX - dragStartPosRef.current.x, e.clientY - dragStartPosRef.current.y);
-                                if (dist > 5) return; // It was a drag, ignore click
+                                if (dist > 5) return;
                               }
                               toggleTargetCollapse(node.id);
                             }
@@ -904,24 +794,22 @@ export default function App() {
                             dragStartPosRef.current = { x: e.clientX, y: e.clientY };
                             if (mode === 'select' || mode === 'link') {
                               e.stopPropagation();
-                              if (e.button === 0) { // Left Click
+                              if (e.button === 0) {
                                 if (mode === 'link') {
                                   if (!linkingSource) setLinkingSource(node.id);
                                   else {
                                     handleLink(linkingSource, node.id);
                                     setLinkingSource(null);
                                     setMode('select');
-                                    // PREVENT IMMEDIATE CLICK TRIGGER
                                     justLinkedRef.current = true;
                                     setTimeout(() => justLinkedRef.current = false, 200);
                                   }
                                 } else {
                                   setSelectedNodeId(node.id);
-                                  // ONLY DRAG IF NOT LOCKED
                                   if (!lockedNodes.has(node.id)) {
                                     setDraggingNode(node.id);
                                   }
-                                  setIsEditing(false); // Do not open edit mode automatically
+                                  setIsEditing(false);
                                 }
                               }
                             } else if (mode === 'eraser') {
@@ -941,7 +829,6 @@ export default function App() {
                           className={`absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer flex flex-col items-center group ${isSel ? 'z-50 scale-110' : 'z-10'}`}
                           style={{ left: node.x, top: node.y }}>
 
-                          {/* NODE LOCKING INDICATOR */}
                           {lockedNodes.has(node.id) && (
                             <div className="absolute -top-1 -left-1 bg-neutral-800 text-neutral-400 p-0.5 rounded-full border border-white/10 z-50">
                               <Lock size={10} />
@@ -954,16 +841,14 @@ export default function App() {
               `}
                             style={{
                               boxShadow: isSel
-                                ? `0 0 30px ${display.color}60, inset 0 0 10px ${display.color}20` // Selected Glow
-                                : `0 0 15px ${display.color}20, inset 0 0 5px ${display.color}10`, // Passive Glow
-                              border: `1px solid ${isSel ? display.color : display.color + '40'}` // Dynamic Border Color
+                                ? `0 0 30px ${display.color}60, inset 0 0 10px ${display.color}20`
+                                : `0 0 15px ${display.color}20, inset 0 0 5px ${display.color}10`,
+                              border: `1px solid ${isSel ? display.color : display.color + '40'}`
                             }}
                           >
-
                             {React.createElement(display.Icon, { size: 20, style: { color: isSel ? '#fff' : display.color, filter: 'drop-shadow(0 0 5px rgba(0,0,0,0.5))' } })}
                           </div>
 
-                          {/* TARGET COLLAPSE BADGE */}
                           {node.type === 'target' && isCollapsedTarget && (
                             <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg border border-white/20">
                               {node.totalChildren}
@@ -986,7 +871,6 @@ export default function App() {
         </div>
 
         {/* INSPECTOR PANEL */}
-        {/* INSPECTOR PANEL - ONLY SHOW ON EDIT */}
         {
           isEditing && (
             <InspectorPanel isEditing={isEditing} setIsEditing={setIsEditing} handleEnrich={handleEnrich} />
@@ -1017,17 +901,13 @@ export default function App() {
           )
         }
 
-
-
-        {/* LAYOUT CONTROLS - TOP RIGHT (HORIZONTAL) */}
+        {/* LAYOUT CONTROLS */}
         <div className="absolute top-20 right-6 z-30 flex items-center gap-2 glass-panel p-1 rounded-lg border border-white/5 bg-black/40 backdrop-blur-xl">
           <button onClick={() => applyLayout('force')} className={`w-8 h-8 flex items-center justify-center rounded transition ${activeLayout === 'force' ? 'text-cyan-400 bg-cyan-950/30' : 'text-neutral-400 hover:text-white'}`} title="Fuerza"><Share2 size={16} /></button>
           <button onClick={() => applyLayout('grid')} className={`w-8 h-8 flex items-center justify-center rounded transition ${activeLayout === 'grid' ? 'text-cyan-400 bg-cyan-950/30' : 'text-neutral-400 hover:text-white'}`} title="Cuadrícula"><Grid size={16} /></button>
           <button onClick={() => applyLayout('radial')} className={`w-8 h-8 flex items-center justify-center rounded transition ${activeLayout === 'radial' ? 'text-cyan-400 bg-cyan-950/30' : 'text-neutral-400 hover:text-white'}`} title="Radial"><CircleDot size={16} /></button>
           <button onClick={() => applyLayout('tree')} className={`w-8 h-8 flex items-center justify-center rounded transition ${activeLayout === 'tree' ? 'text-cyan-400 bg-cyan-950/30' : 'text-neutral-400 hover:text-white'}`} title="Árbol"><GitBranch size={16} /></button>
         </div>
-
-
 
         {/* MINIMAP */}
         <Minimap
@@ -1039,7 +919,7 @@ export default function App() {
           onNavigate={(x, y) => setOffset({ x, y })}
         />
 
-        {/* HOVER DETAILS CARD (WITH PENCIL) */}
+        {/* HOVER DETAILS CARD */}
         {
           hoveredNodeId && !contextMenu && !draggingNode && (
             (() => {
@@ -1060,7 +940,6 @@ export default function App() {
                       <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow shadow-cyan-500/50" />
                       {node.type}
                     </span>
-                    {/* PENCIL INSIDE THE CARD */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1136,4 +1015,5 @@ export default function App() {
       </main >
     </div >
   );
+}
 }
