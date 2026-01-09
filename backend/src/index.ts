@@ -4,38 +4,79 @@ import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { ipLookup, dnsLookup, emailLookup, phoneLookup } from './modules/osint';
 
+// --- NEW PLUGIN SYSTEM IMPORTS ---
+import { pluginManager } from './modules/core/PluginRegistry';
+
 dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+// --- CONFIGURACIÓN DE SEGURIDAD (CORS) ---
+// Solo permitimos peticiones desde estas direcciones exactas:
+const allowedOrigins = [
+    'https://zahori-osint-0yb6.onrender.com', // Tu URL de producción (Frontend)
+    'http://localhost:5173',                  // Tu entorno local (Vite)
+    'http://localhost:3000'                   // Por si acaso usas otro puerto local
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Permitir peticiones sin origen (como las de Postman o apps móviles)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) === -1) {
+            // Si el origen NO está en la lista, bloqueamos
+            const msg = 'La política CORS de este sitio no permite acceso desde el origen especificado.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true // Permite cookies si las necesitaras en el futuro
+}));
+
 app.use(express.json());
 
 // Cases
 app.get('/api/cases', async (req, res) => {
-    const cases = await prisma.case.findMany({
-        include: { _count: { select: { nodes: true, links: true } } }
-    });
-    res.json(cases);
+    try {
+        const cases = await prisma.case.findMany({
+            include: { _count: { select: { nodes: true, links: true } } }
+        });
+        res.json(cases);
+    } catch (error) {
+        console.error("Error fetching cases:", error);
+        res.status(500).json({ error: "Error al conectar con la base de datos" });
+    }
 });
 
 app.post('/api/cases', async (req, res) => {
-    const { name, description } = req.body;
-    const newCase = await prisma.case.create({
-        data: { name, description }
-    });
-    res.json(newCase);
+    try {
+        const { name, description } = req.body;
+        const newCase = await prisma.case.create({
+            data: { name, description }
+        });
+        res.json(newCase);
+    } catch (error) {
+        console.error("Error creating case:", error);
+        res.status(500).json({ error: "Error creando el caso" });
+    }
 });
 
 app.get('/api/cases/:id', async (req, res) => {
     const { id } = req.params;
-    const caseData = await prisma.case.findUnique({
-        where: { id },
-        include: { nodes: true, links: true }
-    });
-    res.json(caseData);
+    try {
+        const caseData = await prisma.case.findUnique({
+            where: { id },
+            include: { nodes: true, links: true }
+        });
+        res.json(caseData);
+    } catch (error) {
+        res.status(500).json({ error: "Error fetching case details" });
+    }
 });
 
 // Update Case Graph
@@ -43,31 +84,36 @@ app.post('/api/cases/:id/graph', async (req, res) => {
     const { id } = req.params;
     const { nodes, links } = req.body;
 
-    await prisma.$transaction([
-        prisma.node.deleteMany({ where: { caseId: id } }),
-        prisma.link.deleteMany({ where: { caseId: id } }),
-        prisma.node.createMany({
-            data: nodes.map((n: any) => ({
-                id: n.id,
-                type: n.type,
-                data: JSON.stringify(n.data),
-                notes: n.notes || '',
-                x: n.x,
-                y: n.y,
-                caseId: id
-            }))
-        }),
-        prisma.link.createMany({
-            data: links.map((l: any) => ({
-                id: l.id,
-                source: l.source,
-                target: l.target,
-                caseId: id
-            }))
-        })
-    ]);
+    try {
+        await prisma.$transaction([
+            prisma.node.deleteMany({ where: { caseId: id } }),
+            prisma.link.deleteMany({ where: { caseId: id } }),
+            prisma.node.createMany({
+                data: nodes.map((n: any) => ({
+                    id: n.id,
+                    type: n.type,
+                    data: JSON.stringify(n.data),
+                    notes: n.notes || '',
+                    x: n.x,
+                    y: n.y,
+                    caseId: id
+                }))
+            }),
+            prisma.link.createMany({
+                data: links.map((l: any) => ({
+                    id: l.id,
+                    source: l.source,
+                    target: l.target,
+                    caseId: id
+                }))
+            })
+        ]);
 
-    res.json({ success: true });
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error saving graph:", error);
+        res.status(500).json({ error: "Failed to save graph" });
+    }
 });
 
 // OSINT Enrichment
@@ -77,22 +123,24 @@ app.post('/api/enrich', async (req, res) => {
 
     console.log(`[API] Enrichment request for type: ${type}, value: ${searchValue}`);
 
-    if (type === 'ip') {
-        result = await ipLookup(searchValue, apiKeys?.shodan, apiKeys?.abuseipdb, apiKeys?.virustotal);
-    } else if (type === 'domain') {
-        result = await dnsLookup(searchValue);
-    } else if (type === 'email') {
-        result = await emailLookup(searchValue, apiKeys?.hunter);
-    } else if (type === 'phone') {
-        result = await phoneLookup(searchValue, apiKeys?.numverify);
+    try {
+        if (type === 'ip') {
+            result = await ipLookup(searchValue, apiKeys?.shodan, apiKeys?.abuseipdb, apiKeys?.virustotal);
+        } else if (type === 'domain') {
+            result = await dnsLookup(searchValue);
+        } else if (type === 'email') {
+            result = await emailLookup(searchValue, apiKeys?.hunter);
+        } else if (type === 'phone') {
+            result = await phoneLookup(searchValue, apiKeys?.numverify);
+        }
+        res.json({ success: !!result, result });
+    } catch (error) {
+        console.error("Enrichment error:", error);
+        res.status(500).json({ success: false, error: "Enrichment failed" });
     }
-
-    res.json({ success: !!result, result });
 });
 
 // --- NEW PLUGIN SYSTEM API ---
-
-import { pluginManager } from './modules/core/PluginRegistry';
 
 // Get available plugins for a type
 app.get('/api/plugins', (req, res) => {
@@ -106,8 +154,6 @@ app.get('/api/plugins', (req, res) => {
             author: p.author
         })));
     } else {
-        // Return all ? Or error? Let's return all categorized maybe?
-        // deeper introspection needed for "all", for now let's just assume query param is used.
         res.json([]);
     }
 });
@@ -128,7 +174,6 @@ app.post('/api/expand', async (req, res) => {
         const results = await pluginManager.executePlugin(pluginName, node, config);
 
         // 3. Save Results Transcationally
-        // We need to associate new nodes to the same Case ID as the parent node.
         const caseId = node.caseId;
 
         const createdNodes = [];
@@ -138,10 +183,7 @@ app.post('/api/expand', async (req, res) => {
             for (const n of results.newNodes) {
                 const created = await tx.node.create({
                     data: {
-                        id: n.id, // Use ID generated by plugin or let DB? Plugin generated IDs are temp unless UUID. 
-                        // Plugin uses random string. Let's trust it for now but UUID is better.
-                        // If plugin uses "auto_...", we might want to replace it. 
-                        // BUT, the links reference these IDs. So we must keep them consistent.
+                        id: n.id,
                         type: n.type!,
                         data: n.data!,
                         x: n.x!,
