@@ -26,10 +26,35 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, nodeId, nodeType
     const [loading, setLoading] = useState(true);
     const [executing, setExecuting] = useState<string | null>(null);
     const { setNodes, setLinks } = useGraphStore();
-
     // ... useEffect ...
 
-    // ... handleExecute ...
+   
+    const handleExecute = async (pluginName: string) => {
+        setExecuting(pluginName);
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+            
+            await axios.post(`${API_URL}/expand`, {
+                nodeId,
+                pluginName,
+                config: { apiKeys }
+            });
+            
+            alert("Plugin ejecutado correctamente. Por favor, recarga el caso o mueve el nodo para ver los nuevos datos.");
+            onClose();
+        } catch (error) {
+            console.error("Error ejecutando plugin:", error);
+            alert("Error al ejecutar el plugin.");
+        } finally {
+            setExecuting(null);
+        }
+    };
+
+    return (
+        // ... resto del código ...
+    
+
+    
 
     return (
         <div
