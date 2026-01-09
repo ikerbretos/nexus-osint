@@ -843,14 +843,14 @@ export default function App() {
                               // BUT: virtualNodePositions might be empty if never moved. 
                               // Initialize it NOW if empty to avoid jump?
                               if (!virtualNodePositions[node.id]) {
-                                setVirtualNodePositions(prev => ({ ...prev, [node.id]: { x: node.x, y: node.y } }));
+                                setVirtualNodePositions((prev: any) => ({ ...prev, [node.id]: { x: node.x, y: node.y } }));
                               }
                             } else {
                               // If collapsed, just visual drag? 
                               // Simplified: Dragging works same way.
                               setDraggingNode(node.id);
                               if (!virtualNodePositions[node.id]) {
-                                setVirtualNodePositions(prev => ({ ...prev, [node.id]: { x: node.x, y: node.y } }));
+                                setVirtualNodePositions((prev: any) => ({ ...prev, [node.id]: { x: node.x, y: node.y } }));
                               }
                             }
                           }}
